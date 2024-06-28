@@ -2,6 +2,11 @@ provider "aws" {
   region = "us-east-1"  # Cambia esto a tu región preferida
 }
 
+# Definir el valor de la fecha de creación usando locals
+#locals {
+#  creation_date = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
+#}
+
 resource "aws_instance" "web" {
   ami           = "ami-01b799c439fd5516a"  # AMI de Amazon Linux 2
   instance_type = "t2.micro"
@@ -9,6 +14,7 @@ resource "aws_instance" "web" {
 
   tags = {
     Name = "WebServer"
+    CreatedAt = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
   }
 
   # Define el Security Group para permitir tráfico HTTP y SSH
@@ -58,12 +64,6 @@ resource "aws_security_group" "web_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-# Mostrar información resultante de la infraestructura
-output "public_ip" {
-  description = "Dirección IP publica de la instancia EC2"
-  value       = aws_instance.web.public_ip
 }
 
 #### VPC
@@ -121,13 +121,5 @@ resource "aws_instance" "app" {
 }
 locals {
   subnet_names = [for i in aws_subnet.subnet : "subnet-${i.availability_zone}"]
-}
- 
-output "subnet_names" {
-  value = local.subnet_names
-}
-
-output "subnet_ids" {
-  value = aws_subnet.subnet[*].id
 }
 
